@@ -1,41 +1,40 @@
-import { response } from 'express';
-import { createAccont, userLogin, getUser } from '../services/UserServices.js'
+import { createAccount, userLogin, getUser, deleteUser } from '../services/UserServices.js'
 
 export async function createAccontUser(req, res) {
     try {
-        //gets the variables required for the function and calls it
-        const { nameStore, email, key, accountPro} = req.body;
-        const createUser = await createAccont(nameStore, email, key, accountPro);
+        // Gets the variables required to create an account.
+        const { nameStore, email, key, accountPro } = req.body;
+        const createUser = await createAccount(nameStore, email, key, accountPro);
 
-        //Check if the data is correct.
-        if(!createUser) {
-            return res.status(401).json({ error: "Os dados enviados estão incorretos."});
-        }
+        // Returns success when the account is created.
+        return res.status(201).json({ response: 'Conta criada com sucesso', user: createUser });
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        const errorCode = error.code || 'ACCOUNT_CREATE_FAILED';
 
-        //If Correct
-        res.status(200).json({ response: "Conta criada com sucesso" });
-    } catch (err) {
-        //Server erro
-        res.status(500).json({ error: "Erro do servidor" });
+        return res.status(statusCode).json({
+            error: error.message,
+            code: errorCode
+        });
     }
 }
 
 export async function login(req, res) {
     try {
-        //gets the variables required for the function and calls it
+        // Gets the variables required for login and calls the service.
         const { email, key } = req.body;
         const user = await userLogin(email, key);
 
-        //Check if the data is correct.
-        if(!user) { 
-            return res.status(401).json({ error: "E-mail ou senha inválidos" });
-        }
+        // Returns the authenticated user data.
+        return res.status(200).json(user);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        const errorCode = error.code || 'LOGIN_FAILED';
 
-        //If Correct
-        res.status(200).json(user); 
-    } catch(err) {
-        //Server error
-        res.status(500).json({ error: "Erro interno no servidor" });
+        return res.status(statusCode).json({
+            error: error.message,
+            code: errorCode
+        });
     }
 }
 
@@ -44,7 +43,35 @@ export async function getsUsers(req, res) {
         const users = await getUser();
 
         return res.status(200).json(users);
-    } catch (err) {
-        res.status(500).json({ error: "Erro interno no servidor" });
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        const errorCode = error.code || 'USER_LIST_FAILED';
+
+        return res.status(statusCode).json({
+            error: error.message,
+            code: errorCode
+        });
+    }
+}
+
+export async function deleteUserAccount(req, res) {
+    try {
+        // Gets the user ID from the route parameter.
+        const { id } = req.params;
+        const deletedUser = await deleteUser(id);
+
+        // Returns the deleted user data.
+        return res.status(200).json({
+            message: 'Usuário removido com sucesso.',
+            user: deletedUser
+        });
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        const errorCode = error.code || 'USER_DELETE_FAILED';
+
+        return res.status(statusCode).json({
+            error: error.message,
+            code: errorCode
+        });
     }
 }
