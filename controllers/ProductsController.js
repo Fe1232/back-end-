@@ -12,7 +12,8 @@ function handleControllerError(res, error, fallbackCode) {
 
 export async function createProductController(req, res) {
     try {
-        const { nameProduct, category, costPrice, priceToSell, quantity, warningPoint, userId } = req.body;
+        const { nameProduct, category, costPrice, priceToSell, quantity, warningPoint } = req.body;
+        const userId = req.user.userId;
         const createdProduct = await createProduct(nameProduct, category, costPrice, priceToSell, quantity, warningPoint, userId);
 
         return res.status(201).json({ response: 'Product created successfully!', product: createdProduct });

@@ -1,5 +1,7 @@
+import "dotenv/config";
 import prisma from '../lib/prisma.js'
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 function createHttpError(message, statusCode, code) {
     const error = new Error(message);
@@ -109,11 +111,21 @@ export async function userLogin(email, key) {
         throw createHttpError('E-mail ou senha inválidos.', 401, 'INVALID_CREDENTIALS');
     }
 
+    //creates the JWT authentication key
+    const token = jwt.sign(
+        { userId: user.id },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    );
+
     // Returns only public user information.
     return {
-        id: user.id,
-        nameStore: user.nameStore,
-        email: user.email
+        user: {
+            id: user.id,
+            nameStore: user.nameStore,
+            email: user.email
+        },
+        token
     };
 }
 
