@@ -24,7 +24,7 @@ export async function createProductController(req, res) {
 
 export async function getProductsByUserIdController(req, res) {
     try {
-        const { userId } = req.params;
+        const userId = req.user.userId;
         const products = await getProductsByUserId(userId);
 
         return res.status(200).json(products);
@@ -37,7 +37,9 @@ export async function updateProductController(req, res) {
     try {
         const { id } = req.params;
         const { nameProduct, category, costPrice, priceToSell, quantity, warningPoint } = req.body;
-        const updatedProduct = await updateProduct(id, nameProduct, category, costPrice, priceToSell, quantity, warningPoint);
+        const userId = req.user.userId;
+
+        const updatedProduct = await updateProduct(id, nameProduct, category, costPrice, priceToSell, quantity, warningPoint, userId);
 
         return res.status(200).json({ response: 'Product updated successfully!', product: updatedProduct });
     } catch (error) {
@@ -48,7 +50,7 @@ export async function updateProductController(req, res) {
 export async function deleteProductController(req, res) {
     try {
         const { id } = req.params;
-        const { userId } = req.body;
+        const userId = req.user.userId;
         const deletedProduct = await deleteProduct(id, userId);
 
         return res.status(200).json({ response: 'Product deleted successfully!', product: deletedProduct });

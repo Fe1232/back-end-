@@ -100,7 +100,7 @@ export async function userLogin(email, key) {
 
     // Checks if the user exists.
     if (!user) {
-        throw createHttpError('Nenhum usuário encontrado com este e-mail.', 404, 'USER_NOT_FOUND');
+        throw createHttpError('E-mail ou senha inválidos.', 401, 'INVALID_CREDENTIALS');
     }
 
     // Compares the password provided with the stored hash.

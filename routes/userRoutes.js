@@ -11,9 +11,9 @@ router.post('/users', createAccontUser);
 router.post('/login', login);
 
 // Lists all registered users.
-router.get('/users', getsUsers);
+//router.get('/users', authMiddleware, getsUsers);
 
 // Deletes a specific user by ID.
-router.delete('/users/:id', deleteUserAccount);
+router.delete('/users/:id', authMiddleware, deleteUserAccount);
 
 export default router;

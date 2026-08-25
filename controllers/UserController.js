@@ -58,6 +58,14 @@ export async function deleteUserAccount(req, res) {
     try {
         // Gets the user ID from the route parameter.
         const { id } = req.params;
+
+        if (req.user.userId !== id) {
+            return res.status(403).json({
+                error: 'Você não tem autorização para remover este usuário.',
+                code: 'USER_DELETE_FORBIDDEN'
+            });
+        }
+
         const deletedUser = await deleteUser(id);
 
         // Returns the deleted user data.

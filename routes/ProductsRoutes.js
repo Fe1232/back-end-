@@ -8,7 +8,7 @@ const router = Router();
 router.post('/products', authMiddleware, createProductController);
 
 // List all products belonging to a specific user.
-router.get('/products/:userId', authMiddleware, getProductsByUserIdController);
+router.get('/products', authMiddleware, getProductsByUserIdController);
 
 // Update an existing product by its identifier.
 router.put('/products/:id', authMiddleware, updateProductController);

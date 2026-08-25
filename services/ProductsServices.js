@@ -198,13 +198,17 @@ export async function getProductsByUserId(userId) {
     }
 }
 
-export async function updateProduct(id, nameProduct, category, costPrice, priceToSell, quantity, warningPoint) {
+export async function updateProduct(id, nameProduct, category, costPrice, priceToSell, quantity, warningPoint, userId) {
     const validId = validateProductId(id);
     const validInput = validateProductUpdate(nameProduct, category, costPrice, priceToSell, quantity, warningPoint);
+    const validUserId = validateUserId(userId);
 
     const existingProduct = await prisma.products.findUnique({ where: { id: validId } });
     if (!existingProduct) {
         throw createHttpError('O ID do produto não existe.', 404, 'PRODUCT_ID_NOT_FOUND');
+    }
+    if (existingProduct.userId !== validUserId) {
+        throw createHttpError('Você não tem autorização para atualizar este produto.', 403, 'PRODUCT_UPDATE_FORBIDDEN');
     }
 
     try {
