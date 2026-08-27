@@ -22,7 +22,9 @@ app.use(userRoutes);
 // Mount product-related routes.
 app.use(ProductsRoutes);
 
+const PORT = process.env.PORT || 8000;
+
 // Start the server and listen on port 8000.
-app.listen(8000, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log('Server running on port 8000');
 });
