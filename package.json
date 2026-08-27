@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-     "start": "node Server1.js",
-    "test": "node --test"
+    "start": "node Server1.js",
+    "test": "node --test",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
