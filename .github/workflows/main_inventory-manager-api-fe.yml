@@ -26,6 +26,16 @@ jobs:
       - name: npm install, build, and test
         run: |
           npm ci
+
+          echo "=== Prisma versions ==="
+          npm ls @prisma/client prisma
+
+          echo "=== PrismaClient export ==="
+          node -e "import('@prisma/client').then(m => console.log(typeof m.PrismaClient))"
+
+          echo "=== Prisma generated files ==="
+          ls -la node_modules/@prisma/client
+
           npm run build --if-present
           npm run test --if-present
         env:
