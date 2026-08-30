@@ -33,6 +33,12 @@ jobs:
           echo "=== PrismaClient export ==="
           node -e "import('@prisma/client').then(m => console.log(typeof m.PrismaClient))"
 
+          echo "=== Prisma package.json ==="
+          cat node_modules/@prisma/client/package.json
+
+          echo "=== Prisma index.js ==="
+          cat node_modules/@prisma/client/index.js
+
           echo "=== Prisma generated files ==="
           ls -la node_modules/@prisma/client
 
