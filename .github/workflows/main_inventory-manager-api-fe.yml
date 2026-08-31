@@ -27,6 +27,8 @@ jobs:
         run: |
           npm ci
 
+          npx prima generate
+
           echo "=== Prisma versions ==="
           npm ls @prisma/client prisma
 
