@@ -25,9 +25,7 @@ jobs:
 
       - name: npm install, build, and test
         run: |
-          npm ci --allow-scripts
-
-          npx prima generate
+          npm ci 
 
           echo "=== Prisma versions ==="
           npm ls @prisma/client prisma
@@ -55,6 +53,7 @@ jobs:
         with:
           name: node-app
           path: .
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
