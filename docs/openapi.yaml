@@ -1,0 +1,535 @@
+openapi: 3.0.3
+info:
+  title: Inventory Manager API
+  description: |
+    REST API for inventory management.
+
+    Version 1.0.0 provides user registration, JWT authentication,
+    account deletion and product CRUD operations.
+  version: 1.0.0
+  license:
+    name: ISC
+
+servers:
+  - url: https://inventory-manager-api-fe-g4cjgadneahudhcb.brazilsouth-01.azurewebsites.net
+    description: Production - Azure App Service
+
+tags:
+  - name: Authentication
+    description: Account creation and authentication
+  - name: Users
+    description: User account operations
+  - name: Products
+    description: Inventory product operations
+
+paths:
+  /users:
+    post:
+      tags: [Authentication]
+      summary: Create account
+      description: Creates a new user account.
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            example:
+              nameStore: Minha Loja
+              email: usuario@email.com
+              key: senha123
+              accountPro: false
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+        '400':
+          description: Invalid account data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Account creation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /login:
+    post:
+      tags: [Authentication]
+      summary: Login
+      description: Authenticates a user and returns a JWT valid for one hour.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: usuario@email.com
+              key: senha123
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid login data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Login failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{id}:
+    delete:
+      tags: [Users]
+      summary: Delete account
+      description: Deletes the authenticated user's account. The path ID must match the authenticated user's ID.
+      operationId: deleteUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteUserResponse'
+        '400':
+          description: Invalid user ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: User is not authorized to delete this account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: User has related records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Account deletion failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /products:
+    post:
+      tags: [Products]
+      summary: Create product
+      description: Creates a product for the authenticated user. The user ID is obtained from the JWT.
+      operationId: createProduct
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+            example:
+              nameProduct: Notebook
+              category: Eletrônicos
+              costPrice: 2500
+              priceToSell: 3299.9
+              quantity: 10
+              warningPoint: 3
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductMutationResponse'
+        '400':
+          description: Invalid product data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Authenticated user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Product creation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags: [Products]
+      summary: List products
+      description: Returns all products belonging to the authenticated user.
+      operationId: listProducts
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid authenticated user ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Authenticated user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Product retrieval failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /products/{id}:
+    put:
+      tags: [Products]
+      summary: Update product
+      description: Updates a product only if it belongs to the authenticated user.
+      operationId: updateProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductMutationResponse'
+        '400':
+          description: Invalid product ID or product data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Product belongs to another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Product update failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Products]
+      summary: Delete product
+      description: Deletes a product only if it belongs to the authenticated user.
+      operationId: deleteProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        '200':
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteProductResponse'
+        '400':
+          description: Invalid product or user ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Product does not belong to the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Product deletion failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT returned by POST /login. Token expires after 1 hour.
+
+  parameters:
+    UserId:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectId of the user.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{24}$'
+        example: 64f000000000000000000001
+
+    ProductId:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectId of the product.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{24}$'
+        example: 64f000000000000000000002
+
+  schemas:
+    CreateUserRequest:
+      type: object
+      required: [nameStore, email, key, accountPro]
+      properties:
+        nameStore:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        key:
+          type: string
+          minLength: 6
+          description: Password. Stored as a bcrypt hash.
+        accountPro:
+          type: boolean
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        nameStore:
+          type: string
+        email:
+          type: string
+          format: email
+        accountPro:
+          type: boolean
+
+    CreateUserResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          example: Conta criada com sucesso
+        user:
+          $ref: '#/components/schemas/User'
+
+    LoginRequest:
+      type: object
+      required: [email, key]
+      properties:
+        email:
+          type: string
+          format: email
+        key:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+          description: JWT authentication token. Expires after 1 hour.
+
+    ProductRequest:
+      type: object
+      required:
+        - nameProduct
+        - category
+        - costPrice
+        - priceToSell
+        - quantity
+        - warningPoint
+      properties:
+        nameProduct:
+          type: string
+          minLength: 1
+        category:
+          type: string
+          minLength: 1
+        costPrice:
+          type: number
+          format: float
+          minimum: 0
+        priceToSell:
+          type: number
+          format: float
+          minimum: 0
+        quantity:
+          type: integer
+          minimum: 0
+        warningPoint:
+          type: integer
+          minimum: 0
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        nameProduct:
+          type: string
+        category:
+          type: string
+        costPrice:
+          type: number
+          format: float
+        priceToSell:
+          type: number
+          format: float
+        quantity:
+          type: integer
+        warningPoint:
+          type: integer
+        userId:
+          type: string
+
+    ProductMutationResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          example: Product created successfully!
+        product:
+          $ref: '#/components/schemas/Product'
+
+    DeleteProductResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          example: Product deleted successfully!
+        product:
+          type: object
+          properties:
+            deletedCount:
+              type: integer
+              example: 1
+
+    DeleteUserResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Usuário removido com sucesso.
+        user:
+          $ref: '#/components/schemas/User'
+
+    Error:
+      type: object
+      required: [error, code]
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+      example:
+        error: Token inválido ou expirado.
+        code: AUTH_TOKEN_INVALID

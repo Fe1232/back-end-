@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes.js';
 import ProductsRoutes from './routes/ProductsRoutes.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from './lib/swagger.js';
 
 const app = express();
 
@@ -16,6 +18,12 @@ app.use(cors());
 // Allow the server to parse JSON payloads from incoming requests.
 app.use(express.json({ limit: '100kb' }));
 
+app.use(
+    '/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDocument)
+);
+
 // Mount user-related routes, including CRUD operations.
 app.use(userRoutes);
 
@@ -26,5 +34,5 @@ const PORT = process.env.PORT || 8000;
 
 // Start the server and listen on port 8000.
 app.listen(PORT, '0.0.0.0', () => {
-    console.log('Server running on port 8000');
+    console.log(`Server running on port ${PORT}`);
 });
