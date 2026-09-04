@@ -5,7 +5,7 @@ function handleControllerError(res, error, fallbackCode) {
     const errorCode = error?.code || fallbackCode;
 
     return res.status(statusCode).json({
-        error: error?.message || 'Unexpected error.',
+        error: error?.message || 'Não foi possível concluir a operação do produto neste momento.',
         code: errorCode
     });
 }
