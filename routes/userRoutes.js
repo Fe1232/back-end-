@@ -10,8 +10,8 @@ router.post('/users', createAccontUser);
 // Authenticates an existing user.
 router.post('/login', login);
 
-// Lists all registered users.
-//router.get('/users', authMiddleware, getsUsers);
+// Returns only the authenticated user's public data.
+router.get('/users/me', authMiddleware, getsUsers);
 
 // Deletes a specific user by ID.
 router.delete('/users/:id', authMiddleware, deleteUserAccount);

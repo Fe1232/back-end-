@@ -40,9 +40,18 @@ export async function login(req, res) {
 
 export async function getsUsers(req, res) {
     try {
-        const users = await getUser();
+        const userId = req.user?.userId;
 
-        return res.status(200).json(users);
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Token inválido ou expirado.',
+                code: 'AUTH_TOKEN_INVALID'
+            });
+        }
+
+        const user = await getUser(userId);
+
+        return res.status(200).json(user);
     } catch (error) {
         const statusCode = error.statusCode || 500;
         const errorCode = error.code || 'USER_LIST_FAILED';

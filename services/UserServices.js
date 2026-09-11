@@ -129,19 +129,30 @@ export async function userLogin(email, key) {
     };
 }
 
-export async function getUser() {
-    try {
-        // Gets all users.
-        const users = await prisma.user.findMany();
+export async function getUser(id) {
+    const validId = validateUserId(id);
 
-        const safeUser = users.map((user) => {
-            const { key: _, ...safeUser } = user;
-            return safeUser;
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: validId },
+            select: {
+                id: true,
+                nameStore: true,
+                email: true,
+                accountPro: true
+            }
         });
 
-        // Return users without exposing the password hash.
-        return safeUser;
+        if (!user) {
+            throw createHttpError('A conta desta sessão não foi encontrada.', 404, 'USER_NOT_FOUND');
+        }
+
+        return user;
     } catch (error) {
+        if (error.statusCode) {
+            throw error;
+        }
+
         throw createHttpError('Não foi possível buscar os usuários neste momento.', 500, 'USER_LIST_FAILED');
     }
 }
