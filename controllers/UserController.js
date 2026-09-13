@@ -1,4 +1,4 @@
-import { createAccount, userLogin, getUser, deleteUser } from '../services/UserServices.js'
+import { createAccount, userLogin, getUser, updateUser, updatePassword, deleteUser } from '../services/UserServices.js'
 
 export async function createAccontUser(req, res) {
     try {
@@ -55,6 +55,72 @@ export async function getsUsers(req, res) {
     } catch (error) {
         const statusCode = error.statusCode || 500;
         const errorCode = error.code || 'USER_LIST_FAILED';
+
+        return res.status(statusCode).json({
+            error: error.message,
+            code: errorCode
+        });
+    }
+}
+
+export async function updateUserAccount(req, res) {
+    try {
+        const userId = req.user?.userId;
+        const { id } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Token inválido ou expirado.',
+                code: 'AUTH_TOKEN_INVALID'
+            });
+        }
+
+        if (userId !== id) {
+            return res.status(403).json({
+                error: 'Você não tem autorização para alterar este usuário.',
+                code: 'USER_UPDATE_FORBIDDEN'
+            });
+        }
+
+        const user = await updateUser(id, req.body);
+
+        return res.status(200).json(user);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        const errorCode = error.code || 'USER_UPDATE_FAILED';
+
+        return res.status(statusCode).json({
+            error: error.message,
+            code: errorCode
+        });
+    }
+}
+
+export async function updateUserPassword(req, res) {
+    try {
+        const userId = req.user?.userId;
+        const { id } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Token inválido ou expirado.',
+                code: 'AUTH_TOKEN_INVALID'
+            });
+        }
+
+        if (userId !== id) {
+            return res.status(403).json({
+                error: 'Você não tem autorização para alterar este usuário.',
+                code: 'USER_PASSWORD_UPDATE_FORBIDDEN'
+            });
+        }
+
+        const user = await updatePassword(id, req.body);
+
+        return res.status(200).json(user);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        const errorCode = error.code || 'USER_PASSWORD_UPDATE_FAILED';
 
         return res.status(statusCode).json({
             error: error.message,

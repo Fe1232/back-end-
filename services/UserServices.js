@@ -157,6 +157,156 @@ export async function getUser(id) {
     }
 }
 
+export async function updateUser(id, data) {
+    const validId = validateUserId(id);
+
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw createHttpError('O corpo da requisição é obrigatório.', 400, 'USER_UPDATE_DATA_REQUIRED');
+    }
+
+    if (Object.hasOwn(data, 'id') || Object.hasOwn(data, 'key') || Object.hasOwn(data, 'accountPro')) {
+        throw createHttpError('Os campos id, key e accountPro não podem ser alterados.', 400, 'USER_UPDATE_FIELD_NOT_ALLOWED');
+    }
+
+    const allowedFields = ['nameStore', 'email'];
+    const receivedFields = Object.keys(data);
+    const hasDisallowedField = receivedFields.some((field) => !allowedFields.includes(field));
+
+    if (hasDisallowedField) {
+        throw createHttpError('Apenas nameStore e email podem ser alterados.', 400, 'USER_UPDATE_FIELD_NOT_ALLOWED');
+    }
+
+    if (receivedFields.length === 0) {
+        throw createHttpError('Informe nameStore ou email para atualizar a conta.', 400, 'USER_UPDATE_DATA_REQUIRED');
+    }
+
+    const updateData = {};
+
+    if (Object.hasOwn(data, 'nameStore')) {
+        if (typeof data.nameStore !== 'string' || !data.nameStore.trim()) {
+            throw createHttpError('O nome da loja não pode estar vazio.', 400, 'ACCOUNT_NAME_INVALID');
+        }
+
+        updateData.nameStore = data.nameStore.trim();
+    }
+
+    if (Object.hasOwn(data, 'email')) {
+        if (typeof data.email !== 'string' || !data.email.trim()) {
+            throw createHttpError('O e-mail é obrigatório.', 400, 'ACCOUNT_EMAIL_REQUIRED');
+        }
+
+        const normalizedEmail = data.email.trim().toLowerCase();
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailPattern.test(normalizedEmail)) {
+            throw createHttpError('O e-mail informado é inválido.', 400, 'ACCOUNT_EMAIL_INVALID');
+        }
+
+        const existingUser = await prisma.user.findUnique({
+            where: { email: normalizedEmail },
+            select: { id: true }
+        });
+
+        if (existingUser && existingUser.id !== validId) {
+            throw createHttpError('Já existe um usuário cadastrado com este e-mail.', 409, 'EMAIL_ALREADY_REGISTERED');
+        }
+
+        updateData.email = normalizedEmail;
+    }
+
+    try {
+        return await prisma.user.update({
+            where: { id: validId },
+            data: updateData,
+            select: {
+                id: true,
+                nameStore: true,
+                email: true,
+                accountPro: true
+            }
+        });
+    } catch (error) {
+        if (error?.code === 'P2025') {
+            throw createHttpError('Nenhum usuário foi encontrado com o ID informado.', 404, 'USER_NOT_FOUND');
+        }
+
+        if (error?.code === 'P2002') {
+            throw createHttpError('Já existe um usuário cadastrado com este e-mail.', 409, 'EMAIL_ALREADY_REGISTERED');
+        }
+
+        throw createHttpError('Não foi possível atualizar a conta neste momento.', 500, 'USER_UPDATE_FAILED');
+    }
+}
+
+export async function updatePassword(id, data) {
+    const validId = validateUserId(id);
+
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw createHttpError('O corpo da requisição é obrigatório.', 400, 'PASSWORD_UPDATE_DATA_REQUIRED');
+    }
+
+    const { currentPassword, newPassword } = data;
+    const hasDisallowedField = Object.keys(data).some(
+        (field) => !['currentPassword', 'newPassword'].includes(field)
+    );
+
+    if (hasDisallowedField) {
+        throw createHttpError(
+            'Apenas currentPassword e newPassword podem ser enviados.',
+            400,
+            'PASSWORD_UPDATE_FIELD_NOT_ALLOWED'
+        );
+    }
+
+    if (typeof currentPassword !== 'string' || !currentPassword.trim()) {
+        throw createHttpError('A senha atual é obrigatória.', 400, 'CURRENT_PASSWORD_REQUIRED');
+    }
+
+    if (typeof newPassword !== 'string' || !newPassword.trim()) {
+        throw createHttpError('A nova senha é obrigatória.', 400, 'NEW_PASSWORD_REQUIRED');
+    }
+
+    if (newPassword.length < 6) {
+        throw createHttpError('A senha deve ter pelo menos 6 caracteres.', 400, 'ACCOUNT_PASSWORD_TOO_SHORT');
+    }
+
+    const existingUser = await prisma.user.findUnique({
+        where: { id: validId },
+        select: { id: true, key: true }
+    });
+
+    if (!existingUser) {
+        throw createHttpError('Nenhum usuário foi encontrado com o ID informado.', 404, 'USER_NOT_FOUND');
+    }
+
+    const passwordMatches = await bcrypt.compare(currentPassword, existingUser.key);
+
+    if (!passwordMatches) {
+        throw createHttpError('A senha atual está incorreta.', 401, 'CURRENT_PASSWORD_INVALID');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    try {
+        return await prisma.user.update({
+            where: { id: validId },
+            data: { key: hashedPassword },
+            select: {
+                id: true,
+                nameStore: true,
+                email: true,
+                accountPro: true
+            }
+        });
+    } catch (error) {
+        if (error?.code === 'P2025') {
+            throw createHttpError('Nenhum usuário foi encontrado com o ID informado.', 404, 'USER_NOT_FOUND');
+        }
+
+        throw createHttpError('Não foi possível alterar a senha neste momento.', 500, 'USER_PASSWORD_UPDATE_FAILED');
+    }
+}
+
 function validateUserId(id) {
     // Validates that the ID was sent and has the expected format.
     if (!id || typeof id !== 'string') {

@@ -204,6 +204,98 @@ Authenticates a user and returns a JWT.
 
 ---
 
+## Update account
+
+### `PUT /users/:id`
+
+Updates the authenticated user's account. The `:id` parameter must match the `userId` in the JWT.
+
+### Headers
+
+```http
+Authorization: Bearer JWT_TOKEN
+Content-Type: application/json
+```
+
+### Request body
+
+```json
+{
+  "nameStore": "Nova Loja",
+  "email": "novo@email.com"
+}
+```
+
+Only `nameStore` and `email` can be changed. The `id`, `key`, and `accountPro` fields are not accepted.
+
+### `200 OK`
+
+Returns the updated user with `id`, `nameStore`, `email`, and `accountPro`. The password hash is never returned.
+
+### Possible errors
+
+| Status | Code | Meaning |
+|---:|---|---|
+| `400` | `USER_UPDATE_DATA_REQUIRED` | No update data was provided |
+| `400` | `USER_UPDATE_FIELD_NOT_ALLOWED` | A protected or unsupported field was provided |
+| `400` | `ACCOUNT_NAME_INVALID` | Invalid store name |
+| `400` | `ACCOUNT_EMAIL_REQUIRED` | Email is missing |
+| `400` | `ACCOUNT_EMAIL_INVALID` | Invalid email |
+| `401` | `AUTH_TOKEN_MISSING` | Authentication token was not provided |
+| `401` | `AUTH_TOKEN_INVALID` | Token is invalid or expired |
+| `403` | `USER_UPDATE_FORBIDDEN` | User is trying to update another account |
+| `404` | `USER_NOT_FOUND` | User was not found |
+| `409` | `EMAIL_ALREADY_REGISTERED` | Email already exists |
+| `500` | `USER_UPDATE_FAILED` | Account update failed |
+
+---
+
+## Update password
+
+### `PATCH /users/:id/password`
+
+Changes the authenticated user's password. The `:id` parameter must match the `userId` in the JWT.
+
+### Headers
+
+```http
+Authorization: Bearer JWT_TOKEN
+Content-Type: application/json
+```
+
+### Request body
+
+```json
+{
+  "currentPassword": "senha-atual",
+  "newPassword": "nova-senha"
+}
+```
+
+The current password is verified with bcrypt. The new password must have at least 6 characters and is stored only as a bcrypt hash.
+
+### `200 OK`
+
+Returns the updated user's public data. The password and its hash are never returned.
+
+### Possible errors
+
+| Status | Code | Meaning |
+|---:|---|---|
+| `400` | `PASSWORD_UPDATE_DATA_REQUIRED` | Request body is missing |
+| `400` | `CURRENT_PASSWORD_REQUIRED` | Current password is missing |
+| `400` | `NEW_PASSWORD_REQUIRED` | New password is missing |
+| `400` | `ACCOUNT_PASSWORD_TOO_SHORT` | New password has fewer than 6 characters |
+| `400` | `PASSWORD_UPDATE_FIELD_NOT_ALLOWED` | Unsupported password field was provided |
+| `401` | `AUTH_TOKEN_MISSING` | Authentication token was not provided |
+| `401` | `AUTH_TOKEN_INVALID` | Token is invalid or expired |
+| `401` | `CURRENT_PASSWORD_INVALID` | Current password is incorrect |
+| `403` | `USER_PASSWORD_UPDATE_FORBIDDEN` | User is trying to update another account |
+| `404` | `USER_NOT_FOUND` | User was not found |
+| `500` | `USER_PASSWORD_UPDATE_FAILED` | Password update failed |
+
+---
+
 ## Delete account
 
 ### `DELETE /users/:id`
