@@ -53,18 +53,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                name_required:
+                  value:
+                    error: O nome da loja é obrigatório.
+                    code: ACCOUNT_NAME_REQUIRED
+                email_required:
+                  value:
+                    error: O e-mail é obrigatório.
+                    code: ACCOUNT_EMAIL_REQUIRED
+                email_invalid:
+                  value:
+                    error: O e-mail informado é inválido.
+                    code: ACCOUNT_EMAIL_INVALID
+                password_short:
+                  value:
+                    error: A senha deve ter pelo menos 6 caracteres.
+                    code: ACCOUNT_PASSWORD_TOO_SHORT
+                account_pro_invalid:
+                  value:
+                    error: O campo accountPro deve ser verdadeiro ou falso.
+                    code: ACCOUNT_PRO_INVALID
         '409':
           description: Email already registered
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Já existe um usuário cadastrado com este e-mail.
+                code: EMAIL_ALREADY_REGISTERED
         '500':
           description: Account creation failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Não foi possível criar a conta neste momento.
+                code: ACCOUNT_CREATE_FAILED
 
   /login:
     post:
@@ -94,18 +121,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                email_required:
+                  value:
+                    error: O e-mail é obrigatório.
+                    code: LOGIN_EMAIL_REQUIRED
+                email_invalid:
+                  value:
+                    error: O e-mail informado é inválido.
+                    code: LOGIN_EMAIL_INVALID
+                password_required:
+                  value:
+                    error: A senha é obrigatória.
+                    code: LOGIN_PASSWORD_REQUIRED
         '401':
           description: Invalid credentials
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: E-mail ou senha inválidos.
+                code: INVALID_CREDENTIALS
         '500':
           description: Login failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Não foi possível entrar agora.
+                code: LOGIN_FAILED
 
   /users/me:
     get:
@@ -128,18 +174,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                token_missing:
+                  value:
+                    error: Token de autenticação não fornecido.
+                    code: AUTH_TOKEN_MISSING
+                token_invalid:
+                  value:
+                    error: Token inválido ou expirado.
+                    code: AUTH_TOKEN_INVALID
+                auth_config_invalid:
+                  value:
+                    error: A autenticação não está configurada corretamente.
+                    code: AUTH_CONFIG_INVALID
         '404':
           description: Authenticated user not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: A conta desta sessão não foi encontrada.
+                code: USER_NOT_FOUND
         '500':
           description: User lookup failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Não foi possível carregar os usuários agora.
+                code: USER_LIST_FAILED
 
   /users/{id}/password:
     patch:
@@ -173,30 +238,69 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                data_required:
+                  value:
+                    error: O corpo da requisição é obrigatório.
+                    code: PASSWORD_UPDATE_DATA_REQUIRED
+                field_not_allowed:
+                  value:
+                    error: Apenas currentPassword e newPassword podem ser enviados.
+                    code: PASSWORD_UPDATE_FIELD_NOT_ALLOWED
+                current_password_required:
+                  value:
+                    error: A senha atual é obrigatória.
+                    code: CURRENT_PASSWORD_REQUIRED
+                new_password_required:
+                  value:
+                    error: A nova senha é obrigatória.
+                    code: NEW_PASSWORD_REQUIRED
+                password_too_short:
+                  value:
+                    error: A senha deve ter pelo menos 6 caracteres.
+                    code: ACCOUNT_PASSWORD_TOO_SHORT
         '401':
           description: Missing, invalid or incorrect authentication data
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                token_invalid:
+                  value:
+                    error: Token inválido ou expirado.
+                    code: AUTH_TOKEN_INVALID
+                current_password_invalid:
+                  value:
+                    error: A senha atual está incorreta.
+                    code: CURRENT_PASSWORD_INVALID
         '403':
           description: User is not authorized to update this account
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Você não tem autorização para alterar este usuário.
+                code: USER_PASSWORD_UPDATE_FORBIDDEN
         '404':
           description: User not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Nenhum usuário foi encontrado com o ID informado.
+                code: USER_NOT_FOUND
         '500':
           description: Password update failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Não foi possível alterar a senha neste momento.
+                code: USER_PASSWORD_UPDATE_FAILED
 
   /users/{id}:
     put:
@@ -230,36 +334,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                data_required:
+                  value:
+                    error: Informe nameStore ou email para atualizar a conta.
+                    code: USER_UPDATE_DATA_REQUIRED
+                field_not_allowed:
+                  value:
+                    error: Apenas nameStore e email podem ser alterados.
+                    code: USER_UPDATE_FIELD_NOT_ALLOWED
+                name_invalid:
+                  value:
+                    error: O nome da loja não pode estar vazio.
+                    code: ACCOUNT_NAME_INVALID
+                email_required:
+                  value:
+                    error: O e-mail é obrigatório.
+                    code: ACCOUNT_EMAIL_REQUIRED
+                email_invalid:
+                  value:
+                    error: O e-mail informado é inválido.
+                    code: ACCOUNT_EMAIL_INVALID
         '401':
           description: Missing, invalid or expired token
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Token inválido ou expirado.
+                code: AUTH_TOKEN_INVALID
         '403':
           description: User is not authorized to update this account
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Você não tem autorização para alterar este usuário.
+                code: USER_UPDATE_FORBIDDEN
         '404':
           description: User not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Nenhum usuário foi encontrado com o ID informado.
+                code: USER_NOT_FOUND
         '409':
           description: Email already registered
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Já existe um usuário cadastrado com este e-mail.
+                code: EMAIL_ALREADY_REGISTERED
         '500':
           description: Account update failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Não foi possível atualizar a conta neste momento.
+                code: USER_UPDATE_FAILED
     delete:
       tags: [Users]
       summary: Delete account
@@ -282,30 +422,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                user_id_required:
+                  value:
+                    error: O ID do usuário é obrigatório.
+                    code: USER_ID_REQUIRED
+                user_id_invalid:
+                  value:
+                    error: O ID do usuário informado é inválido.
+                    code: USER_ID_INVALID
         '401':
           description: Missing, invalid or expired token
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Token inválido ou expirado.
+                code: AUTH_TOKEN_INVALID
         '403':
           description: User is not authorized to delete this account
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Você não tem autorização para remover este usuário.
+                code: USER_DELETE_FORBIDDEN
         '404':
           description: User not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Nenhum usuário foi encontrado com o ID informado.
+                code: USER_NOT_FOUND
         '409':
           description: User has related records
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Não foi possível remover o usuário porque ele possui registros relacionados.
+                code: USER_DELETE_CONFLICT
         '500':
           description: Account deletion failed
           content:
@@ -347,24 +508,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                name_required:
+                  value:
+                    error: O nome do produto é obrigatório.
+                    code: PRODUCT_NAME_REQUIRED
+                category_required:
+                  value:
+                    error: A categoria do produto é obrigatória.
+                    code: PRODUCT_CATEGORY_REQUIRED
+                cost_price_invalid:
+                  value:
+                    error: O custo do produto deve ser um número não-negativo.
+                    code: PRODUCT_COSTPRICE_INVALID
+                price_to_sell_invalid:
+                  value:
+                    error: O preço de venda deve ser um número não-negativo.
+                    code: PRODUCT_PRICETOSELL_INVALID
+                quantity_invalid:
+                  value:
+                    error: A quantidade deve ser um inteiro não-negativo.
+                    code: PRODUCT_QUANTITY_INVALID
+                warning_point_invalid:
+                  value:
+                    error: O ponto de aviso (warningPoint) deve ser um inteiro não-negativo.
+                    code: PRODUCT_WARNINGPOINT_INVALID
+                user_id_invalid:
+                  value:
+                    error: O ID do usuário associado ao produto é obrigatório e inválido.
+                    code: PRODUCT_USERID_INVALID
         '401':
           description: Missing, invalid or expired token
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Token inválido ou expirado.
+                code: AUTH_TOKEN_INVALID
         '404':
           description: Authenticated user not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: O ID do usuário não existe.
+                code: PRODUCT_USERID_NOT_FOUND
         '500':
           description: Product creation failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                creation_failed:
+                  value:
+                    error: Erro ao criar o produto.
+                    code: PRODUCT_CREATION_FAILED
+                creation_failed_alt:
+                  value:
+                    error: Não foi possível cadastrar o produto agora.
+                    code: PRODUCT_CREATE_FAILED
 
     get:
       tags: [Products]
@@ -388,24 +593,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                user_id_required:
+                  value:
+                    error: O ID do usuário é obrigatório.
+                    code: USER_ID_REQUIRED
+                user_id_invalid:
+                  value:
+                    error: O ID do usuário informado é inválido.
+                    code: USER_ID_INVALID
         '401':
           description: Missing, invalid or expired token
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Token inválido ou expirado.
+                code: AUTH_TOKEN_INVALID
         '404':
           description: Authenticated user not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: O ID do usuário não existe.
+                code: PRODUCT_USERID_NOT_FOUND
         '500':
           description: Product retrieval failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Erro ao buscar os produtos deste usuário.
+                code: PRODUCT_FETCH_FAILED
 
   /products/{id}:
     put:
@@ -436,30 +659,75 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                product_id_required:
+                  value:
+                    error: O ID do produto é obrigatório.
+                    code: PRODUCT_ID_REQUIRED
+                product_id_invalid:
+                  value:
+                    error: O ID do produto informado é inválido.
+                    code: PRODUCT_ID_INVALID
+                name_required:
+                  value:
+                    error: O nome do produto é obrigatório.
+                    code: PRODUCT_NAME_REQUIRED
+                category_required:
+                  value:
+                    error: A categoria do produto é obrigatória.
+                    code: PRODUCT_CATEGORY_REQUIRED
+                cost_price_invalid:
+                  value:
+                    error: O custo do produto deve ser um número não-negativo.
+                    code: PRODUCT_COSTPRICE_INVALID
+                price_to_sell_invalid:
+                  value:
+                    error: O preço de venda deve ser um número não-negativo.
+                    code: PRODUCT_PRICETOSELL_INVALID
+                quantity_invalid:
+                  value:
+                    error: A quantidade deve ser um inteiro não-negativo.
+                    code: PRODUCT_QUANTITY_INVALID
+                warning_point_invalid:
+                  value:
+                    error: O ponto de aviso (warningPoint) deve ser um inteiro não-negativo.
+                    code: PRODUCT_WARNINGPOINT_INVALID
         '401':
           description: Missing, invalid or expired token
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Token inválido ou expirado.
+                code: AUTH_TOKEN_INVALID
         '403':
           description: Product belongs to another user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Você não tem autorização para atualizar este produto.
+                code: PRODUCT_UPDATE_FORBIDDEN
         '404':
           description: Product not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: O ID do produto não existe.
+                code: PRODUCT_ID_NOT_FOUND
         '500':
           description: Product update failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Erro ao atualizar o produto.
+                code: PRODUCT_UPDATE_FAILED
 
     delete:
       tags: [Products]
@@ -483,24 +751,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                product_id_required:
+                  value:
+                    error: O ID do produto é obrigatório.
+                    code: PRODUCT_ID_REQUIRED
+                product_id_invalid:
+                  value:
+                    error: O ID do produto informado é inválido.
+                    code: PRODUCT_ID_INVALID
+                user_id_required:
+                  value:
+                    error: O ID do usuário é obrigatório.
+                    code: USER_ID_REQUIRED
+                user_id_invalid:
+                  value:
+                    error: O ID do usuário informado é inválido.
+                    code: USER_ID_INVALID
         '401':
           description: Missing, invalid or expired token
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Token inválido ou expirado.
+                code: AUTH_TOKEN_INVALID
         '403':
           description: Product does not belong to the authenticated user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Você não tem autorização para deletar este produto ou ele não existe.
+                code: PRODUCT_DELETE_FORBIDDEN
         '500':
           description: Product deletion failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                error: Não foi possível deletar o produto neste momento.
+                code: PRODUCT_DELETE_FAILED
 
 components:
   securitySchemes:
@@ -703,8 +997,65 @@ components:
       properties:
         error:
           type: string
+          description: Mensagem de erro legível para humanos
         code:
           type: string
+          description: Código de erro para tratamento programático
+          enum:
+            - ACCOUNT_NAME_REQUIRED
+            - ACCOUNT_EMAIL_REQUIRED
+            - ACCOUNT_EMAIL_INVALID
+            - ACCOUNT_PASSWORD_TOO_SHORT
+            - ACCOUNT_PRO_INVALID
+            - EMAIL_ALREADY_REGISTERED
+            - LOGIN_EMAIL_REQUIRED
+            - LOGIN_EMAIL_INVALID
+            - LOGIN_PASSWORD_REQUIRED
+            - INVALID_CREDENTIALS
+            - AUTH_CONFIG_INVALID
+            - AUTH_TOKEN_MISSING
+            - AUTH_TOKEN_INVALID
+            - PRODUCT_NAME_REQUIRED
+            - PRODUCT_CATEGORY_REQUIRED
+            - PRODUCT_COSTPRICE_INVALID
+            - PRODUCT_PRICETOSELL_INVALID
+            - PRODUCT_QUANTITY_INVALID
+            - PRODUCT_WARNINGPOINT_INVALID
+            - PRODUCT_USERID_INVALID
+            - PRODUCT_USERID_NOT_FOUND
+            - PRODUCT_ID_REQUIRED
+            - PRODUCT_ID_INVALID
+            - PRODUCT_ID_NOT_FOUND
+            - PRODUCT_DELETE_FORBIDDEN
+            - PRODUCT_UPDATE_FORBIDDEN
+            - PRODUCT_CREATE_FAILED
+            - PRODUCT_CREATION_FAILED
+            - PRODUCT_FETCH_FAILED
+            - PRODUCT_UPDATE_FAILED
+            - PRODUCT_DELETE_FAILED
+            - ACCOUNT_CREATE_FAILED
+            - LOGIN_FAILED
+            - USER_LIST_FAILED
+            - USER_ID_REQUIRED
+            - USER_ID_INVALID
+            - USER_NOT_FOUND
+            - USER_DELETE_FORBIDDEN
+            - USER_DELETE_CONFLICT
+            - USER_DELETE_FAILED
+            - USER_UPDATE_DATA_REQUIRED
+            - USER_UPDATE_FIELD_NOT_ALLOWED
+            - USER_UPDATE_FORBIDDEN
+            - USER_UPDATE_FAILED
+            - USER_PASSWORD_UPDATE_FORBIDDEN
+            - USER_PASSWORD_UPDATE_FAILED
+            - PASSWORD_UPDATE_DATA_REQUIRED
+            - PASSWORD_UPDATE_FIELD_NOT_ALLOWED
+            - CURRENT_PASSWORD_REQUIRED
+            - NEW_PASSWORD_REQUIRED
+            - CURRENT_PASSWORD_INVALID
+            - INVALID_JSON
+            - ROUTE_NOT_FOUND
+            - SERVER_ERROR
       example:
         error: Token inválido ou expirado.
         code: AUTH_TOKEN_INVALID
